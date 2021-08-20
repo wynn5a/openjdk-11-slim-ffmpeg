@@ -13,6 +13,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag jdk11-ffmpeg:$(date +%s)
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    - name: PrepareReg Names
+      run: | 
+          echo VERSION_TAG='v1.0' >> $GITHUB_ENV
+          echo LASTEST_TAG='lastest' >> $GITHUB_ENV
+
+    - name: Build and push Docker images
+      id: docker_build
+      uses: docker/build-push-action@v2.3.0
+      with:
+        push: true
+        tags: |
+          ${{env.VERSION_TAG}}
+          ${{env.LASTEST_TAG}}
+        build-args: |
+          ${{steps.version_step.outputs.version}}
